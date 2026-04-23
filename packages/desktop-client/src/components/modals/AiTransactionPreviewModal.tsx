@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
 
 import { Block } from '@actual-app/components/block';
 import { Button } from '@actual-app/components/button';
@@ -73,9 +72,8 @@ type ParseResponse = {
 export function AiTransactionPreviewModal({
   inputText,
 }: AiTransactionPreviewModalProps) {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
-  const dateFormat = useDateFormat() || 'MM/dd/yyyy';
+  const dateFormat = useDateFormat() || 'yyyy-MM-dd';
 
   const { data: accounts = [] } = useAccounts();
   const { data: { list: categoryList = [], grouped: categoryGroups = [] } = {} } =
@@ -117,7 +115,7 @@ export function AiTransactionPreviewModal({
         setParseSource(result.source);
 
         if (!result.success || !result.transaction) {
-          setParseError(result.error || t('Failed to parse transaction'));
+          setParseError(result.error || '无法解析交易信息');
           setIsLoading(false);
           return;
         }
@@ -151,13 +149,13 @@ export function AiTransactionPreviewModal({
         });
       } catch (error) {
         setParseError(
-          error instanceof Error ? error.message : t('Unexpected error occurred'),
+          error instanceof Error ? error.message : '发生未知错误',
         );
       } finally {
         setIsLoading(false);
       }
     },
-    [dateFormat, validAccounts, categoryList, llmConfig, t],
+    [dateFormat, validAccounts, categoryList, llmConfig],
   );
 
   useEffect(() => {
@@ -218,12 +216,12 @@ export function AiTransactionPreviewModal({
 
   const handleSave = useCallback(async () => {
     if (!formState.accountId) {
-      setParseError(t('Please select an account'));
+      setParseError('请选择账户');
       return;
     }
 
     if (formState.amount === 0) {
-      setParseError(t('Amount cannot be zero'));
+      setParseError('金额不能为零');
       return;
     }
 
@@ -242,10 +240,10 @@ export function AiTransactionPreviewModal({
       await send('transaction-add', newTransaction);
     } catch (error) {
       setParseError(
-        error instanceof Error ? error.message : t('Failed to save transaction'),
+        error instanceof Error ? error.message : '保存交易失败',
       );
     }
-  }, [formState, t]);
+  }, [formState]);
 
   const getCategoryName = (categoryId: string | null): string => {
     if (!categoryId) return '';
@@ -273,7 +271,7 @@ export function AiTransactionPreviewModal({
       {({ state }) => (
         <>
           <ModalHeader
-            title={<ModalTitle title={t('New Transaction')} />}
+            title={<ModalTitle title="新建交易" />}
             rightContent={
               <ModalCloseButton
                 onPress={() => state.close()}
@@ -294,20 +292,20 @@ export function AiTransactionPreviewModal({
               }}
             >
               <Text style={{ color: theme.pageTextSubdued, flexShrink: 0 }}>
-                {t('Input:')}
+                输入:
               </Text>
               <Input
                 value={originalInput}
                 onChangeValue={setOriginalInput}
                 style={{ flex: 1 }}
-                placeholder={t('e.g. "咖啡 38" or "昨天打车 26"')}
+                placeholder='例如: "咖啡 38" 或 "昨天打车 26"'
               />
               <Button
                 variant="primary"
                 onPress={handleReparse}
                 isDisabled={isLoading || !originalInput.trim()}
               >
-                {t('Reparse')}
+                重新解析
               </Button>
             </View>
 
@@ -331,8 +329,8 @@ export function AiTransactionPreviewModal({
                   }}
                 >
                   {parseSource === 'llm'
-                    ? t('Parsed by AI')
-                    : t('Parsed locally (fallback)')}
+                    ? 'AI 智能解析'
+                    : '本地解析（备用模式）'}
                 </Text>
               </View>
             )}
@@ -355,7 +353,7 @@ export function AiTransactionPreviewModal({
                 />
                 <View style={{ flex: 1 }}>
                   <Text style={{ color: theme.errorText, fontWeight: 500 }}>
-                    {t('Parse Error')}
+                    解析错误
                   </Text>
                   <Text style={{ color: theme.errorText, fontSize: 13, marginTop: 4 }}>
                     {parseError}
@@ -377,7 +375,7 @@ export function AiTransactionPreviewModal({
               })}
             >
               <FormField>
-                <FormLabel title={t('Date')} />
+                <FormLabel title="日期" />
                 <DateSelect
                   value={formState.date}
                   dateFormat={dateFormat}
@@ -386,7 +384,7 @@ export function AiTransactionPreviewModal({
               </FormField>
 
               <FormField>
-                <FormLabel title={t('Amount')} />
+                <FormLabel title="金额" />
                 <AmountInput
                   value={formState.amount}
                   onUpdate={handleAmountChange}
@@ -396,7 +394,7 @@ export function AiTransactionPreviewModal({
             </View>
 
             <FormField>
-              <FormLabel title={t('Account')} />
+              <FormLabel title="账户" />
               <AccountAutocomplete
                 type="single"
                 value={formState.accountId}
@@ -404,7 +402,7 @@ export function AiTransactionPreviewModal({
                 openOnFocus
                 includeClosedAccounts={false}
                 inputProps={{
-                  placeholder: t('Select account'),
+                  placeholder: '选择账户',
                   onClick: () => {
                     dispatch(
                       pushModal({
@@ -424,7 +422,7 @@ export function AiTransactionPreviewModal({
             </FormField>
 
             <FormField>
-              <FormLabel title={t('Payee')} />
+              <FormLabel title="收款人" />
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 <PayeeAutocomplete
                   type="single"
@@ -433,7 +431,8 @@ export function AiTransactionPreviewModal({
                   openOnFocus
                   onSelect={handlePayeeChange}
                   inputProps={{
-                    placeholder: t('Select or type payee'),
+                    placeholder: formState.payeeName || '选择或输入收款人',
+                    defaultValue: formState.payeeName || undefined,
                     onClick: () => {
                       dispatch(
                         pushModal({
@@ -451,19 +450,32 @@ export function AiTransactionPreviewModal({
                   }}
                 />
               </View>
-              <Text
-                style={{
-                  fontSize: 12,
-                  color: theme.pageTextSubdued,
-                  marginTop: 4,
-                }}
-              >
-                {t('Tip: Type to create a new payee')}
-              </Text>
+              {formState.payeeName && !formState.payeeId && (
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: theme.noticeText,
+                    marginTop: 4,
+                  }}
+                >
+                  💡 输入框已填入 "{formState.payeeName}"，可直接回车创建新收款人
+                </Text>
+              )}
+              {!formState.payeeName && (
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: theme.pageTextSubdued,
+                    marginTop: 4,
+                  }}
+                >
+                  提示: 输入新名称可直接创建收款人
+                </Text>
+              )}
             </FormField>
 
             <FormField>
-              <FormLabel title={t('Category')} />
+              <FormLabel title="分类" />
               <CategoryAutocomplete
                 type="single"
                 value={formState.categoryId || ''}
@@ -472,7 +484,7 @@ export function AiTransactionPreviewModal({
                 showHiddenCategories
                 onSelect={handleCategoryChange}
                 inputProps={{
-                  placeholder: t('Select category'),
+                  placeholder: '选择分类',
                   onClick: () => {
                     dispatch(
                       pushModal({
@@ -492,18 +504,18 @@ export function AiTransactionPreviewModal({
             </FormField>
 
             <FormField>
-              <FormLabel title={t('Notes')} />
+              <FormLabel title="备注" />
               <Input
                 value={formState.notes || ''}
                 onChangeValue={handleNotesChange}
-                placeholder={t('Optional notes')}
+                placeholder="可选备注"
               />
             </FormField>
           </View>
 
           <ModalButtons style={{ padding: '0 10px 10px' }}>
             <Button onPress={() => state.close()}>
-              <Trans>Cancel</Trans>
+              取消
             </Button>
             <Button
               variant="primary"
@@ -513,7 +525,7 @@ export function AiTransactionPreviewModal({
               }}
               isDisabled={isLoading || !formState.accountId || formState.amount === 0}
             >
-              <Trans>Save Transaction</Trans>
+              保存交易
             </Button>
           </ModalButtons>
         </>

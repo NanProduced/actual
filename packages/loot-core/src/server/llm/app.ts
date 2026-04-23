@@ -7,6 +7,13 @@ import { parseWithLlm, parseLocally } from '#shared/llm/index';
 import type { ParseResult, ParsedTransaction } from '#shared/llm/types';
 import * as asyncStorage from '#platform/server/asyncStorage';
 import * as monthUtils from '#shared/months';
+import type {
+  AccountEntity,
+  CategoryEntity,
+  CategoryGroupEntity,
+  PayeeEntity,
+} from '#types/models';
+import * as db from '#server/db';
 
 export type LlmHandlers = {
   'llm/parse': typeof parseTransaction;
@@ -44,10 +51,18 @@ async function parseTransaction({
   input,
   useLocalFallback = true,
   dateFormat,
+  accounts,
+  categories,
+  categoryGroups,
+  payees,
 }: {
   input: string;
   useLocalFallback?: boolean;
   dateFormat?: string;
+  accounts?: Array<Pick<AccountEntity, 'id' | 'name'>>;
+  categories?: Array<Pick<CategoryEntity, 'id' | 'name' | 'group'>>;
+  categoryGroups?: Array<Pick<CategoryGroupEntity, 'id' | 'name'>>;
+  payees?: Array<Pick<PayeeEntity, 'id' | 'name'>>;
 }): Promise<{
   success: boolean;
   transaction?: ParsedTransaction;
@@ -57,7 +72,7 @@ async function parseTransaction({
   if (!input || input.trim().length === 0) {
     return {
       success: false,
-      error: 'Input is empty',
+      error: '输入为空',
       source: 'none',
     };
   }
@@ -65,8 +80,43 @@ async function parseTransaction({
   const trimmedInput = input.trim();
   const config = await getLlmConfig();
 
+  let contextAccounts: Array<Pick<AccountEntity, 'id' | 'name'>> = accounts || [];
+  let contextCategories: Array<Pick<CategoryEntity, 'id' | 'name' | 'group'>> = categories || [];
+  let contextCategoryGroups: Array<Pick<CategoryGroupEntity, 'id' | 'name'>> = categoryGroups || [];
+  let contextPayees: Array<Pick<PayeeEntity, 'id' | 'name'>> = payees || [];
+
+  if (contextAccounts.length === 0) {
+    const dbAccounts = await db.all<db.DbAccount>(
+      'SELECT id, name FROM accounts WHERE tombstone = 0',
+    );
+    contextAccounts = dbAccounts.map(a => ({ id: a.id, name: a.name }));
+  }
+
+  if (contextCategories.length === 0 || contextCategoryGroups.length === 0) {
+    const dbCategories = await db.all<db.DbCategory>(
+      'SELECT id, name, cat_group as "group" FROM categories WHERE tombstone = 0 AND hidden = 0',
+    );
+    const dbGroups = await db.all<db.DbCategoryGroup>(
+      'SELECT id, name FROM category_groups WHERE tombstone = 0',
+    );
+    contextCategories = dbCategories.map(c => ({ id: c.id, name: c.name, group: c.cat_group }));
+    contextCategoryGroups = dbGroups.map(g => ({ id: g.id, name: g.name }));
+  }
+
+  if (contextPayees.length === 0) {
+    const dbPayees = await db.all<db.DbPayee>(
+      'SELECT id, name FROM payees WHERE tombstone = 0 ORDER BY name LIMIT 50',
+    );
+    contextPayees = dbPayees.map(p => ({ id: p.id, name: p.name }));
+  }
+
   if (config?.enabled && config.apiKey) {
-    const result: ParseResult = await parseWithLlm(config, trimmedInput);
+    const result: ParseResult = await parseWithLlm(config, trimmedInput, {
+      accounts: contextAccounts,
+      categories: contextCategories,
+      categoryGroups: contextCategoryGroups,
+      payees: contextPayees,
+    });
 
     if (result.success && result.transaction) {
       return {
@@ -98,7 +148,7 @@ async function parseTransaction({
 
   return {
     success: false,
-    error: 'Could not extract amount from input',
+    error: '无法从输入中提取金额',
     source: 'none',
   };
 }
@@ -114,7 +164,7 @@ async function testLlmConnection({
   if (!config.apiKey) {
     return {
       success: false,
-      error: 'API key is required',
+      error: '需要 API Key',
     };
   }
 
@@ -122,8 +172,8 @@ async function testLlmConnection({
     const result = await callLlm(
       config,
       [
-        { role: 'system', content: 'You are a test assistant.' },
-        { role: 'user', content: 'Say "Hello World" in JSON format: {"message": "..."}' },
+        { role: 'system', content: '你是一个测试助手。' },
+        { role: 'user', content: '用 JSON 格式回复: {"message": "你好"}' },
       ],
       {
         temperature: 0.1,
@@ -135,7 +185,7 @@ async function testLlmConnection({
     if (!result.success) {
       return {
         success: false,
-        error: result.error || 'Connection failed',
+        error: result.error || '连接失败',
       };
     }
 
@@ -145,7 +195,7 @@ async function testLlmConnection({
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: error instanceof Error ? error.message : '未知错误',
     };
   }
 }

@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
 
 import { Button } from '@actual-app/components/button';
 import { Input } from '@actual-app/components/input';
@@ -20,7 +19,6 @@ type AiTransactionInputProps = {
 };
 
 export function AiTransactionInput({ style }: AiTransactionInputProps) {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [llmConfig] = useGlobalPref('llmConfig');
 
@@ -68,7 +66,7 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
         ref={triggerRef}
         variant="bare"
         onPress={() => setShowQuickInput(true)}
-        aria-label={t('Quick transaction input')}
+        aria-label="快速记账输入"
         style={{
           ...style,
           padding: '4px 8px',
@@ -82,7 +80,7 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
           <SvgAdd style={{ width: 14, height: 14 }} />
         )}
         <Text style={{ fontSize: 13 }}>
-          {hasAiEnabled ? t('AI Input') : t('Quick Add')}
+          {hasAiEnabled ? 'AI 记账' : '快速添加'}
         </Text>
       </Button>
 
@@ -148,9 +146,7 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
                     color: theme.pageText,
                   }}
                 >
-                  {hasAiEnabled
-                    ? t('AI Transaction Input')
-                    : t('Quick Transaction Input')}
+                  {hasAiEnabled ? 'AI 智能记账' : '快速记账'}
                 </Text>
               </View>
               <Text
@@ -165,7 +161,7 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
 
             <Input
               autoFocus
-              placeholder={t('e.g. "咖啡 38" or "昨天打车 26"')}
+              placeholder='例如: "咖啡 38" 或 "昨天打车 26"'
               value={quickInputValue}
               onChangeValue={setQuickInputValue}
               onEnter={(value) => {
@@ -183,10 +179,7 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
                   color: theme.pageTextSubdued,
                 }}
               >
-                <Trans>
-                  Describe your transaction naturally. AI will parse amount,
-                  date, category, and account.
-                </Trans>
+                用自然语言描述你的交易，AI 将自动解析金额、日期、分类和账户。
               </Text>
             ) : (
               <Text
@@ -195,9 +188,7 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
                   color: theme.pageTextSubdued,
                 }}
               >
-                <Trans>
-                  Enable AI in Settings for smarter parsing.
-                </Trans>
+                请在设置中启用 AI 功能以获得更智能的解析体验。
               </Text>
             )}
 
@@ -216,14 +207,14 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
                   setQuickInputValue('');
                 }}
               >
-                <Trans>Cancel</Trans>
+                取消
               </Button>
               <Button
                 variant="primary"
                 onPress={() => handleSubmit(quickInputValue)}
                 isDisabled={!quickInputValue.trim()}
               >
-                <Trans>Continue</Trans>
+                继续
               </Button>
             </View>
           </View>
