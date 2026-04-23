@@ -86,20 +86,24 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
         </Text>
       </Button>
 
-      {showQuickInput && triggerRef.current && (
-        <Popover
-          triggerRef={triggerRef as React.RefObject<HTMLButtonElement>}
-          placement="bottom"
-          offset={4}
-          onOpenChange={() => setShowQuickInput(false)}
-          style={{
-            minWidth: 350,
-            backgroundColor: theme.menuBackground,
-            borderRadius: 6,
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
-            zIndex: 3001,
-          }}
-        >
+      <Popover
+        triggerRef={triggerRef}
+        placement="bottom"
+        offset={4}
+        isOpen={showQuickInput}
+        onOpenChange={isOpen => {
+          if (!isOpen) {
+            setShowQuickInput(false);
+          }
+        }}
+        style={{
+          minWidth: 350,
+          backgroundColor: theme.menuBackground,
+          borderRadius: 6,
+          boxShadow: '0 4px 20px rgba(0, 0, 0, 0.15)',
+          zIndex: 3001,
+        }}
+      >
           <View
             style={{
               padding: 12,
@@ -224,7 +228,6 @@ export function AiTransactionInput({ style }: AiTransactionInputProps) {
             </View>
           </View>
         </Popover>
-      )}
     </>
   );
 }
