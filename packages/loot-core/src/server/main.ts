@@ -22,6 +22,7 @@ import * as encryption from './encryption';
 import { app as encryptionApp } from './encryption/app';
 import { app as filtersApp } from './filters/app';
 import { app } from './main-app';
+import { app as llmApp } from './llm/app';
 import { mutator, runHandler } from './mutators';
 import { app as notesApp } from './notes/app';
 import { app as payeesApp } from './payees/app';
@@ -146,6 +147,7 @@ app.combine(
   budgetFilesApp,
   encryptionApp,
   tagsApp,
+  llmApp,
 );
 
 export function getDefaultDocumentDir() {

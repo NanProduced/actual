@@ -6,6 +6,7 @@ import type { BudgetFileHandlers } from '#server/budgetfiles/app';
 import type { DashboardHandlers } from '#server/dashboard/app';
 import type { EncryptionHandlers } from '#server/encryption/app';
 import type { FiltersHandlers } from '#server/filters/app';
+import type { LlmHandlers } from '#server/llm/app';
 import type { NotesHandlers } from '#server/notes/app';
 import type { PayeesHandlers } from '#server/payees/app';
 import type { PreferencesHandlers } from '#server/preferences/app';
@@ -41,6 +42,7 @@ export type Handlers = {} & ServerHandlers &
   BudgetFileHandlers &
   EncryptionHandlers &
   TagsHandlers &
-  AuthHandlers;
+  AuthHandlers &
+  LlmHandlers;
 
 export type HandlerFunctions = Handlers[keyof Handlers];
