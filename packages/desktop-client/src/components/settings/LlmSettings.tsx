@@ -1,5 +1,4 @@
 import React, { useCallback, useState } from 'react';
-import { Trans, useTranslation } from 'react-i18next';
 
 import { Block } from '@actual-app/components/block';
 import { Button } from '@actual-app/components/button';
@@ -34,7 +33,7 @@ const DEFAULT_CONFIG: LlmConfig = {
 const PROVIDER_OPTIONS: Array<[LlmProvider, string]> = [
   ['openai', 'OpenAI'],
   ['anthropic', 'Anthropic'],
-  ['openai-compatible', 'OpenAI Compatible'],
+  ['openai-compatible', 'OpenAI 兼容'],
 ];
 
 const DEFAULT_MODELS: Record<LlmProvider, string> = {
@@ -44,7 +43,6 @@ const DEFAULT_MODELS: Record<LlmProvider, string> = {
 };
 
 export function LlmSettings() {
-  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { data: allAccounts = [] } = useAccounts();
 
@@ -107,15 +105,15 @@ export function LlmSettings() {
         setTimeout(() => setTestStatus('idle'), 3000);
       } else {
         setTestStatus('error');
-        setTestError(result.error || t('Connection failed'));
+        setTestError(result.error || '连接失败');
       }
     } catch (error) {
       setTestStatus('error');
       setTestError(
-        error instanceof Error ? error.message : t('Unexpected error'),
+        error instanceof Error ? error.message : '未知错误',
       );
     }
-  }, [config, t]);
+  }, [config]);
 
   const getAccountName = (accountId: string): string => {
     const acc = validAccounts.find((a) => a.id === accountId);
@@ -169,7 +167,7 @@ export function LlmSettings() {
                     : theme.pageTextSubdued,
                 }}
               >
-                <Trans>Enable AI Transaction Parsing</Trans>
+                启用 AI 交易解析
               </Text>
             </label>
           </View>
@@ -195,7 +193,7 @@ export function LlmSettings() {
                 })}
               >
                 <FormField>
-                  <FormLabel title={t('Provider')} />
+                  <FormLabel title="提供商" />
                   <Select<LlmProvider>
                     value={config.provider}
                     onChange={handleProviderChange}
@@ -209,12 +207,12 @@ export function LlmSettings() {
                 </FormField>
 
                 <FormField>
-                  <FormLabel title={t('Model')} />
+                  <FormLabel title="模型" />
                   <input
                     type="text"
                     value={config.model}
                     onChange={(e) => updateConfig({ model: e.target.value })}
-                    placeholder={t('e.g. gpt-4o-mini, claude-3-5-sonnet')}
+                    placeholder="例如: gpt-4o-mini, claude-3-5-sonnet"
                     style={{
                       width: '100%',
                       padding: '8px 12px',
@@ -229,12 +227,12 @@ export function LlmSettings() {
               </View>
 
               <FormField>
-                <FormLabel title={t('API Key')} />
+                <FormLabel title="API Key" />
                 <input
                   type="password"
                   value={config.apiKey}
                   onChange={(e) => updateConfig({ apiKey: e.target.value })}
-                  placeholder={t('Enter your API key')}
+                  placeholder="请输入您的 API Key"
                   style={{
                     width: '100%',
                     padding: '8px 12px',
@@ -249,12 +247,12 @@ export function LlmSettings() {
 
               {config.provider === 'openai-compatible' && (
                 <FormField>
-                  <FormLabel title={t('API Base URL')} />
+                  <FormLabel title="API Base URL" />
                   <input
                     type="text"
                     value={config.apiBase}
                     onChange={(e) => updateConfig({ apiBase: e.target.value })}
-                    placeholder={t('e.g. https://api.openai.com/v1')}
+                    placeholder="例如: https://api.openai.com/v1"
                     style={{
                       width: '100%',
                       padding: '8px 12px',
@@ -269,7 +267,7 @@ export function LlmSettings() {
               )}
 
               <FormField>
-                <FormLabel title={t('Default Account')} />
+                <FormLabel title="默认账户" />
                 <AccountAutocomplete
                   type="single"
                   value={config.defaultAccountId}
@@ -278,7 +276,7 @@ export function LlmSettings() {
                   }
                   openOnFocus
                   inputProps={{
-                    placeholder: t('Select default account'),
+                    placeholder: '选择默认账户',
                     onClick: () => {
                       dispatch(
                         pushModal({
@@ -313,7 +311,7 @@ export function LlmSettings() {
                   isDisabled={testStatus === 'testing' || !config.apiKey}
                 >
                   {testStatus === 'testing' ? (
-                    <Trans>Testing...</Trans>
+                    '测试中...'
                   ) : testStatus === 'success' ? (
                     <View
                       style={{
@@ -329,10 +327,10 @@ export function LlmSettings() {
                           color: theme.pageTextPositive,
                         }}
                       />
-                      <Trans>Connected</Trans>
+                      已连接
                     </View>
                   ) : (
-                    <Trans>Test Connection</Trans>
+                    '测试连接'
                   )}
                 </Button>
               </View>
@@ -346,7 +344,7 @@ export function LlmSettings() {
                   }}
                 >
                   <Text style={{ color: theme.errorText, fontSize: 13 }}>
-                    <Trans>Connection failed:</Trans> {testError}
+                    连接失败: {testError}
                   </Text>
                 </View>
               )}
@@ -362,18 +360,13 @@ export function LlmSettings() {
                   color: theme.pageTextSubdued,
                 }}
               >
-                <Trans>
-                  <strong>How it works:</strong> When you enter a transaction
-                  description like "咖啡 38" or "昨天打车 26", the AI will
-                  automatically parse the amount, date, category, and account. You
-                  can review and edit the parsed information before saving.
-                </Trans>
+                <strong>工作原理：</strong> 当您输入交易描述如
+                "咖啡 38" 或 "昨天打车 26" 时，AI
+                将自动解析金额、日期、分类和账户。您可以在保存前查看和编辑解析的信息。
                 <br />
                 <br />
-                <Trans>
-                  <strong>Supported providers:</strong> OpenAI (GPT-4o-mini
-                  recommended), Anthropic Claude, or any OpenAI-compatible API.
-                </Trans>
+                <strong>支持的提供商：</strong> OpenAI（推荐 GPT-4o-mini）、Anthropic
+                Claude，或任何 OpenAI 兼容的 API。
               </Block>
             </View>
           )}
@@ -381,10 +374,8 @@ export function LlmSettings() {
       }
     >
       <Text>
-        <Trans>
-          <strong>AI Transaction Input</strong> lets you quickly add transactions
-          using natural language.
-        </Trans>
+        <strong>AI 记账</strong>
+        让您可以使用自然语言快速添加交易记录。
       </Text>
     </Setting>
   );

@@ -12,8 +12,10 @@ export type ParsedTransaction = {
   dateRaw: string | null;
   payeeName: string | null;
   categoryName: string | null;
+  categoryId: string | null;
   categoryCandidates: string[];
   accountName: string | null;
+  accountId: string | null;
   accountCandidates: string[];
   notes: string | null;
   isExpense: boolean;
