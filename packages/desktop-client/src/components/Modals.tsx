@@ -78,6 +78,7 @@ import { TrackingBudgetSummaryModal } from './modals/TrackingBudgetSummaryModal'
 import { TransferModal } from './modals/TransferModal';
 import { TransferOwnership } from './modals/TransferOwnership';
 import { UnmigrateBudgetAutomationsModal } from './modals/UnmigrateBudgetAutomationsModal';
+import { AiTransactionPreviewModal } from './modals/AiTransactionPreviewModal';
 import { CategoryLearning } from './payees/CategoryLearning';
 import { DiscoverSchedules } from './schedules/DiscoverSchedules';
 import { PostsOfflineNotification } from './schedules/PostsOfflineNotification';
@@ -410,6 +411,9 @@ export function Modals() {
 
         case 'enable-password-auth':
           return <PasswordEnableModal key={key} {...modal.options} />;
+
+        case 'ai-transaction-preview':
+          return <AiTransactionPreviewModal key={key} {...modal.options} />;
 
         default:
           throw new Error('Unknown modal');

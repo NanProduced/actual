@@ -9,7 +9,19 @@ export type FeatureFlag =
   | 'customThemes'
   | 'budgetAnalysisReport'
   | 'payeeLocations'
-  | 'sankeyReport';
+  | 'sankeyReport'
+  | 'aiTransactionInput';
+
+export type LlmProvider = 'openai' | 'anthropic' | 'openai-compatible';
+
+export type LlmConfig = {
+  enabled: boolean;
+  provider: LlmProvider;
+  apiKey: string;
+  apiBase: string;
+  model: string;
+  defaultAccountId: string;
+};
 
 /**
  * Cross-device preferences. These sync across devices when they are changed.
@@ -128,6 +140,7 @@ export type GlobalPrefs = Partial<{
     port?: number;
   };
   notifyWhenUpdateIsAvailable: boolean;
+  llmConfig: LlmConfig;
 }>;
 
 // GlobalPrefsJson represents what's saved in the global-store.json file
@@ -156,6 +169,7 @@ export type GlobalPrefsJson = Partial<{
   'server-self-signed-cert'?: GlobalPrefs['serverSelfSignedCert'];
   syncServerConfig?: GlobalPrefs['syncServerConfig'];
   notifyWhenUpdateIsAvailable?: GlobalPrefs['notifyWhenUpdateIsAvailable'];
+  llmConfig?: string; // JSON string of LlmConfig
 }>;
 
 export type AuthMethods = 'password' | 'openid';

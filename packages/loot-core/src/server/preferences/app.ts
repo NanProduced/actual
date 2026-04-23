@@ -125,6 +125,9 @@ async function saveGlobalPrefs(prefs: GlobalPrefs) {
       prefs.notifyWhenUpdateIsAvailable,
     );
   }
+  if (prefs.llmConfig !== undefined) {
+    await asyncStorage.setItem('llmConfig', JSON.stringify(prefs.llmConfig));
+  }
   return 'ok';
 }
 
@@ -144,6 +147,7 @@ async function loadGlobalPrefs(): Promise<GlobalPrefs> {
     'server-self-signed-cert': serverSelfSignedCert,
     syncServerConfig,
     notifyWhenUpdateIsAvailable,
+    llmConfig: llmConfigJson,
   } = await asyncStorage.multiGet([
     'floating-sidebar',
     'category-expanded-state',
@@ -159,7 +163,18 @@ async function loadGlobalPrefs(): Promise<GlobalPrefs> {
     'server-self-signed-cert',
     'syncServerConfig',
     'notifyWhenUpdateIsAvailable',
+    'llmConfig',
   ] as const);
+
+  let llmConfig: GlobalPrefs['llmConfig'] = undefined;
+  if (llmConfigJson) {
+    try {
+      llmConfig = JSON.parse(llmConfigJson);
+    } catch {
+      llmConfig = undefined;
+    }
+  }
+
   return {
     floatingSidebar: floatingSidebar === 'true',
     categoryExpandedState: stringToInteger(categoryExpandedState || '') || 0,
@@ -187,6 +202,7 @@ async function loadGlobalPrefs(): Promise<GlobalPrefs> {
       notifyWhenUpdateIsAvailable === undefined
         ? true
         : notifyWhenUpdateIsAvailable, // default to true
+    llmConfig,
   };
 }
 

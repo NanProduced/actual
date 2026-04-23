@@ -618,6 +618,12 @@ export type Modal =
         categoryId: CategoryEntity['id'];
         templates: Template[];
       };
+    }
+  | {
+      name: 'ai-transaction-preview';
+      options: {
+        inputText: string;
+      };
     };
 
 type OpenAccountCloseModalPayload = {
